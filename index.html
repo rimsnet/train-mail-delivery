@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Train Delivery System</title>
+  <!-- Bootstrap CSS -->
+  <link href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" rel="stylesheet">
+  <!-- Vis.js CDN -->
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.css" rel="stylesheet">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vis/4.21.0/vis.min.js"></script>
+  <style>
+    canvas {
+      border: 1px solid black;
+    }
+  </style>
+</head>
+<body>
+  <div class="container mt-5">
+    <h1 class="mb-4">Train Mail Delivery</h1>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="stationInput">Station:</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="stationInput" placeholder="Enter station (e.g., A)">
+            <div class="input-group-append">
+              <button type="button" class="btn btn-primary btn-sm" id="addStationBtn">Add Station</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="edgeInput">Edge:</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="edgeInput" placeholder="Enter edge (e.g., E1,A,B,30)">
+            <div class="input-group-append">
+              <button type="button" class="btn btn-primary btn-sm" id="addEdgeBtn">Add Edge</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="deliveryInput">Delivery:</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="deliveryInput" placeholder="Enter delivery (e.g., K1,5,A,C)">
+            <div class="input-group-append">
+              <button type="button" class="btn btn-primary btn-sm" id="addDeliveryBtn">Add Delivery</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="col-md-6">
+        <div class="form-group">
+          <label for="trainInput">Train:</label>
+          <div class="input-group">
+            <input type="text" class="form-control" id="trainInput" placeholder="Enter train (e.g., Q1,6,B)">
+            <div class="input-group-append">
+              <button type="button" class="btn btn-primary btn-sm" id="addTrainBtn">Add Train</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <hr>
+    <h2>Selected Options:</h2>
+    <div id="selectedOptions"></div>
+    <button type="submit" class="btn btn-primary mt-3" id="submitBtn">Run System</button>
+    <div id="output" class="mt-4"></div>
+    <div id="graphCanvas"></div>
+  </div>
+
+  <!-- Bootstrap JS and jQuery -->
+  <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.4/dist/umd/popper.min.js"></script>
+  <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+  <!-- Vis.js CDN -->
+  <script src="./train-mail-delivery-system.js"></script>
+ 
+  <script>
+    $(document).ready(function() {
+      // Array to store selected options
+      let selectedStations = [];
+      let selectedEdges = [];
+      let selectedDeliveries = [];
+      let selectedTrains = [];
+
+      // Function to add option to selected array and display it
+      function addOption(input, selectedArray) {
+        const value = $(input).val().trim();
+        let formatRegex;
+        let example;
+
+        // Determine format regex and example based on input type
+        if (input === "#stationInput") {
+          formatRegex = /^[A-Z]$/;
+          example = "A";
+        } else if (input === "#edgeInput") {
+          formatRegex = /^E\d+,[A-Z],[A-Z],\d+$/;
+          example = "E1,A,B,30";
+        } else if (input === "#deliveryInput") {
+          formatRegex = /^K\d+,\d+,[A-Z],[A-Z]$/;
+          example = "K1,5,A,C";
+        } else if (input === "#trainInput") {
+          formatRegex = /^Q\d+,\d+,[A-Z]$/;
+          example = "Q1,6,B";
+        }
+
+        // Check if value is valid format
+        if (value !== "" && formatRegex.test(value)) {
+          // Check if value is a duplicate
+          if (selectedArray.includes(value)) {
+            alert("Duplicate value. Please enter a unique value.");
+          } else {
+            selectedArray.push(value);
+            displaySelectedOptions();
+            // Clear input field
+            $(input).val("");
+          }
+        } else {
+          alert("Invalid format. Please enter a valid value. Example format: " + example);
+        }
+      }
+
+      // Function to display selected options
+      function displaySelectedOptions() {
+        let selectedHtml = "<ul>";
+        selectedHtml += "<li><strong>Stations:</strong> " + selectedStations.join(", ") + "</li>";
+        selectedHtml += "<li><strong>Edges:</strong> " + selectedEdges.join(", ") + "</li>";
+        selectedHtml += "<li><strong>Deliveries:</strong> " + selectedDeliveries.join(", ") + "</li>";
+        selectedHtml += "<li><strong>Trains:</strong> " + selectedTrains.join(", ") + "</li>";
+        selectedHtml += "</ul>";
+        $("#selectedOptions").html(selectedHtml);
+      }
+
+      // Event handler for adding station
+      $("#addStationBtn").click(function() {
+        addOption("#stationInput", selectedStations);
+      });
+
+      // Event handler for adding edge
+      $("#addEdgeBtn").click(function() {
+        addOption("#edgeInput", selectedEdges);
+      });
+
+      // Event handler for adding delivery
+      $("#addDeliveryBtn").click(function() {
+        addOption("#deliveryInput", selectedDeliveries);
+      });
+
+      // Event handler for adding train
+      $("#addTrainBtn").click(function() {
+        addOption("#trainInput", selectedTrains);
+      });
+
+
+      
+
+      // Event handler for form submission
+      $("#submitBtn").click(function() {
+        const input = {
+          "stations": selectedStations,
+          "edges": selectedEdges,
+          "deliveries": selectedDeliveries,
+          "trains": selectedTrains
+        };
+        console.log(input);
+      
+        const system = new TrainMailDeliverySystem(input);
+        const output = system.run();
+        console.log(output);
+
+        const movements = output.movements;
+        const time = output.time;
+
+        let moves = "";
+
+        movements.map(move => {
+          moves = moves + move +"</br>"
+        });
+
+
+        $("#output").html("<h2>System Output: ("+ time +") </h2><p>" + moves + "</p>");
+
+      });
+    });
+  </script>
+</body>
+</html>
